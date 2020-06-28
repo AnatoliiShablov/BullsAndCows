@@ -165,9 +165,7 @@ public:
                 new_variants.push_back(lhs);
             }
         }
-        std::cout << current_variants.size() << " :sizeb" << std::endl;
         current_variants = new_variants;
-        std::cout << current_variants.size() << " :sizea" << std::endl;
     }
 
 private:
@@ -191,5 +189,6 @@ int main() {
         last_answer = bulls_cows{b, c};
         ai->answer(last_answer);
     }
+    std::cout << "AI win" << std::endl;
     return 0;
 }
