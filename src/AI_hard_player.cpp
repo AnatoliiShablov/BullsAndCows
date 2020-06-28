@@ -39,36 +39,29 @@ AI_hard_player::AI_hard_player() : AI_hard_player{10, 4} {}
 std::string AI_hard_player::get_variant() {
     if (all.size() == current_variants.size()) {
         last_asked = all.front();
-        return last_asked;
-    }
-
-    if (current_variants.size() == 1) {
+    } else if (current_variants.size() == 1) {
         last_asked = current_variants.front();
-        return last_asked;
-    }
-
-    if (current_variants.size() == 0) {
+    } else if (current_variants.size() == 0) {
         last_asked = "error";
-        return last_asked;
-    }
-
-    size_t min = current_variants.size() + 1;
-    for (std::string const& rhs : all) {
-        std::vector<std::vector<size_t>> counter(all.front().length() + 1,
-                                                 std::vector<size_t>(all.front().length() + 1, 0));
-        size_t tmp_max = 0;
-        for (std::string const& lhs : current_variants) {
-            helper.get_match(lhs, rhs);
-            if (++counter[helper.bulls()][helper.cows()] > tmp_max) {
-                tmp_max = counter[helper.bulls()][helper.cows()];
-                if (tmp_max >= min) {
-                    break;
+    } else {
+        size_t min = current_variants.size() + 1;
+        for (std::string const& rhs : all) {
+            std::vector<std::vector<size_t>> counter(
+                all.front().length() + 1, std::vector<size_t>(all.front().length() + 1, 0));
+            size_t tmp_max = 0;
+            for (std::string const& lhs : current_variants) {
+                helper.get_match(lhs, rhs);
+                if (++counter[helper.bulls()][helper.cows()] > tmp_max) {
+                    tmp_max = counter[helper.bulls()][helper.cows()];
+                    if (tmp_max >= min) {
+                        break;
+                    }
                 }
             }
-        }
-        if (tmp_max < min) {
-            min = tmp_max;
-            last_asked = rhs;
+            if (tmp_max < min) {
+                min = tmp_max;
+                last_asked = rhs;
+            }
         }
     }
     return last_asked;
