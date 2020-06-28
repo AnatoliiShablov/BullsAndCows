@@ -1,6 +1,8 @@
 #include <algorithm>
 #include <bitset>
 #include <cctype>
+#include <cstddef>
+#include <cstdint>
 #include <iostream>
 #include <iterator>
 #include <memory>
@@ -50,10 +52,13 @@ constexpr size_t count_if(InputIt1 first1, InputIt1 last1, InputIt2 first2,
     return count;
 }
 
+constexpr void count(std::array<size_t, 10>& storage, std::string_view value) noexcept;
+constexpr bulls_cows get_match(std::string_view lhs, std::string_view rhs) noexcept;
+
 class player {
 public:
     [[nodiscard]] constexpr bulls_cows get_match(std::string_view check) const noexcept {
-        return get_match(get_value(), check);
+        return ::get_match(get_value(), check);
     }
 
     [[nodiscard]] virtual std::string get_variant() = 0;
@@ -63,11 +68,12 @@ public:
     virtual ~player() = default;
 
 protected:
-    static constexpr void count(std::array<size_t, 10>& storage, std::string_view value) noexcept {
+    friend constexpr void count(std::array<size_t, 10>& storage, std::string_view value) noexcept {
         std::for_each(value.begin(), value.end(),
                       [&storage](char c) { ++storage[static_cast<size_t>(c - '0')]; });
     }
-    static constexpr bulls_cows get_match(std::string_view lhs, std::string_view rhs) noexcept {
+
+    friend constexpr bulls_cows get_match(std::string_view lhs, std::string_view rhs) noexcept {
         std::array<size_t, 10> tmp_storage{};
         count(tmp_storage, lhs);
         count(tmp_storage, rhs);
@@ -138,7 +144,7 @@ public:
         for (std::string const& rhs : all) {
             counter = std::array<std::array<size_t, 5>, 5>{};
             for (std::string const& lhs : current_variants) {
-                auto tmp = get_match(lhs, rhs);
+                auto tmp = ::get_match(lhs, rhs);
                 ++counter[tmp.bulls()][tmp.cows()];
             }
             size_t tmp_max = 0;
@@ -160,7 +166,7 @@ public:
     void answer(bulls_cows const& answer) {
         std::vector<std::string> new_variants;
         for (std::string const& lhs : current_variants) {
-            auto tmp = get_match(lhs, last_asked);
+            auto tmp = ::get_match(lhs, last_asked);
             if (tmp == answer) {
                 new_variants.push_back(lhs);
             }
