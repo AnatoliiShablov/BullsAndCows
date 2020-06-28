@@ -1,5 +1,7 @@
 #include "AI_hard_player.hpp"
 
+#include <chrono>
+#include <iostream>
 #include <random>
 
 namespace {
@@ -25,6 +27,8 @@ AI_hard_player::AI_hard_player(size_t alphabet_size, size_t word_length)
     : player{alphabet_size, word_length}
     , value_{std::string("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ").substr(0, alphabet_size)}
     , last_asked{} {
+    auto start = std::chrono::high_resolution_clock::now();
+
     std::vector<bool> used(alphabet_size, false);
     std::string tmp{};
     tmp.reserve(word_length + 1);
@@ -32,49 +36,57 @@ AI_hard_player::AI_hard_player(size_t alphabet_size, size_t word_length)
     current_variants = all;
     std::shuffle(value_.begin(), value_.end(), std::mt19937());
     value_.erase(word_length);
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::cout << "Constructor finished in: "
+              << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms"
+              << std::endl;
 }
 
 AI_hard_player::AI_hard_player() : AI_hard_player{10, 4} {}
 
 std::string AI_hard_player::get_variant() {
+    auto start = std::chrono::high_resolution_clock::now();
+
     if (all.size() == current_variants.size()) {
         last_asked = all.front();
-        return last_asked;
-    }
-
-    if (current_variants.size() == 1) {
+    } else if (current_variants.size() == 1) {
         last_asked = current_variants.front();
-        return last_asked;
-    }
-
-    if (current_variants.size() == 0) {
+    } else if (current_variants.size() == 0) {
         last_asked = "error";
-        return last_asked;
-    }
-
-    size_t min = current_variants.size() + 1;
-    for (std::string const& rhs : all) {
-        std::vector<std::vector<size_t>> counter(all.front().length() + 1,
-                                                 std::vector<size_t>(all.front().length() + 1, 0));
-        size_t tmp_max = 0;
-        for (std::string const& lhs : current_variants) {
-            helper.get_match(lhs, rhs);
-            if (++counter[helper.bulls()][helper.cows()] > tmp_max) {
-                tmp_max = counter[helper.bulls()][helper.cows()];
-                if (tmp_max >= min) {
-                    break;
+    } else {
+        size_t min = current_variants.size() + 1;
+        for (std::string const& rhs : all) {
+            std::vector<std::vector<size_t>> counter(
+                all.front().length() + 1, std::vector<size_t>(all.front().length() + 1, 0));
+            size_t tmp_max = 0;
+            for (std::string const& lhs : current_variants) {
+                helper.get_match(lhs, rhs);
+                if (++counter[helper.bulls()][helper.cows()] > tmp_max) {
+                    tmp_max = counter[helper.bulls()][helper.cows()];
+                    if (tmp_max >= min) {
+                        break;
+                    }
                 }
             }
-        }
-        if (tmp_max < min) {
-            min = tmp_max;
-            last_asked = rhs;
+            if (tmp_max < min) {
+                min = tmp_max;
+                last_asked = rhs;
+            }
         }
     }
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::cout << "Found variant in: "
+              << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms"
+              << std::endl;
+
     return last_asked;
 }
 
 void AI_hard_player::answer(const bulls_cows& answer) {
+    auto start = std::chrono::high_resolution_clock::now();
+
     std::vector<std::string> new_variants;
     for (std::string const& lhs : current_variants) {
         helper.get_match(lhs, last_asked);
@@ -83,6 +95,11 @@ void AI_hard_player::answer(const bulls_cows& answer) {
         }
     }
     current_variants = new_variants;
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::cout << "Proceed answer in: "
+              << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms"
+              << std::endl;
 }
 
 std::string_view AI_hard_player::get_value() const noexcept {
