@@ -1,7 +1,6 @@
 #ifndef BULLS_COWS_HPP
 #define BULLS_COWS_HPP
 
-#include <compare>
 #include <cstddef>
 #include <cstdint>
 #include <string_view>
